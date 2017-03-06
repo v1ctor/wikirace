@@ -20,6 +20,9 @@ We'd like to see the following things:
     - A quick guide to get the wikiracer running. if it doesn't fully run, we'd like to see an explanation of whatever you're using to test
     - A README file explaining what the code does, what strategies you tried, and how long you spent on each part of the projects
 
-## Getting links
+## Solution
+
+### Components
+#### Getting links
 1. First approach was to use Wiki API but it doesn't scalable and doesn't fit to requirements as we have to work with different websites.
 2. 
