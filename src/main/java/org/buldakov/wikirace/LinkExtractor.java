@@ -1,4 +1,4 @@
-package org.buldakov.wikirace.links;
+package org.buldakov.wikirace;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;

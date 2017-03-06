@@ -1,7 +1,7 @@
 # wikirace
 
 
-##Project Description
+##Problem description
 There’s an online form of racing called “Wikiracing”.  The goal is to traverse your way from one wikipedia page to another, using only links. 
 For example the race of from “National_Basketball_Association” page → to the "Kobe_Bryant" page might be completed by traversing 3 hops:
   National_Basketball_Association -> NBA_Final
@@ -29,3 +29,9 @@ We'd like to see the following things:
 2. 
 
 #### Find a path
+
+
+#### Usage
+```bash
+java wikirace -f "/wiki/Matrix" -t "/wiki/Neo" -e "/wiki/File:" -e "/wiki/Special:" -v true 
+```

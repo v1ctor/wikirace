@@ -1,39 +1,50 @@
 package org.buldakov.wikirace;
 
-import okhttp3.HttpUrl;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import org.buldakov.wikirace.links.LinkExtractor;
+import net.sourceforge.argparse4j.ArgumentParsers;
+import net.sourceforge.argparse4j.impl.Arguments;
+import net.sourceforge.argparse4j.inf.ArgumentParser;
+import net.sourceforge.argparse4j.inf.ArgumentParserException;
+import net.sourceforge.argparse4j.inf.Namespace;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class Main {
 
     public static void main(String[] args) throws IOException {
-        String baseUri = "https://en.wikipedia.org";
-
-        OkHttpClient client = new OkHttpClient();
-        HttpUrl endpoint = HttpUrl.parse(baseUri);
-        Request request = new Request.Builder()
-                .url(endpoint.newBuilder().addPathSegment("wiki").addPathSegment("Matrix").build())
-                .build();
-
-        Response response = client.newCall(request).execute();
-        if (!response.isSuccessful()) {
-            throw new IOException("Error: " + response);
+        ArgumentParser parser = ArgumentParsers.newArgumentParser("wikirace")
+                .defaultHelp(true)
+                .description("Find the path from two resources on website if exists");
+        parser.addArgument("-f", "--from")
+                .required(true)
+                .help("Specify the source resource");
+        parser.addArgument("-t", "--to")
+                .required(true)
+                .help("Specify the destination resource");
+        parser.addArgument("-w", "--website")
+                .setDefault("https://en.wikipedia.org/")
+                .help("Specify website to find the path");
+        parser.addArgument("-e", "--exclude")
+                .help("Prefixes to exclude")
+                .action(Arguments.append());
+        parser.addArgument("-v", "--verbose")
+                .setDefault(false)
+                .choices(true, false)
+                .type(Boolean.class)
+                .help("Verbosity level");
+        try {
+            Namespace ns = parser.parseArgs(args);
+            String from = ns.getString("from");
+            String to = ns.getString("to");
+            List<String> prefixes = ns.getList("exclude");
+            boolean verbose = ns.getBoolean("verbose");
+            WebsiteTraversor travesrsor = new WebsiteTraversor(ns.getString("website"), prefixes, verbose);
+            List<String> result = travesrsor.traverse(from, to);
+            System.out.println(result);
+        } catch (ArgumentParserException e) {
+            parser.handleError(e);
+            System.exit(1);
         }
-        LinkExtractor extractor = new LinkExtractor();
-        List<HttpUrl> links = extractor.getLinks(response.body().string(), baseUri)
-                .stream().map(HttpUrl::parse)
-                .filter(url -> url.pathSize() > 1)
-                .filter(url -> url.host().equals(endpoint.host()))
-                .filter(url -> url.scheme().equals(endpoint.scheme()))
-                .filter(url -> url.port() == endpoint.port())
-                .collect(Collectors.toList());
-
-        System.out.println(links);
     }
+
 }
