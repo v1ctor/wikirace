@@ -36,7 +36,7 @@ public class PageLoader {
 
     public List<String> getPaths(String path) {
         Request request = new Request.Builder()
-                .url(endpoint.newBuilder().addPathSegments(StringUtils.removeFirst(path, "/")).build())
+                .url(endpoint.newBuilder().addPathSegments(StringUtils.removeStart(path, "/")).build())
                 .build();
 
         try {
@@ -59,7 +59,7 @@ public class PageLoader {
                     .filter(url -> url.host().equals(endpoint.host()))
                     .filter(url -> url.scheme().equals(endpoint.scheme()))
                     .filter(url -> url.port() == endpoint.port())
-                    .map(HttpUrl::encodedPath)
+                    .map(url -> String.join("/", url.pathSegments()))
                     .filter(url -> excludePrefixes.stream().noneMatch(prefix -> StringUtils.startsWith(url, prefix)))
                     .collect(Collectors.toList());
         } catch (IOException e) {
