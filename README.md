@@ -4,7 +4,7 @@
 ##Project Description
 There’s an online form of racing called “Wikiracing”.  The goal is to traverse your way from one wikipedia page to another, using only links. 
 For example the race of from “National_Basketball_Association” page → to the "Kobe_Bryant" page might be completed by traversing 3 hops:
-    National_Basketball_Association -> NBA_Finals
+  National_Basketball_Association -> NBA_Final
     NBA_Finals -> Los_Angeles_Lakers
     Los_Angeles_Lakers → Kobe_Bryant
 
