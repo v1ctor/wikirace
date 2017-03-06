@@ -5,6 +5,7 @@ import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
+import org.apache.commons.lang3.time.StopWatch;
 
 import java.io.IOException;
 import java.util.List;
@@ -38,13 +39,30 @@ public class Main {
             String to = ns.getString("to");
             List<String> prefixes = ns.getList("exclude");
             boolean verbose = ns.getBoolean("verbose");
-            WebsiteTraversor travesrsor = new WebsiteTraversor(ns.getString("website"), prefixes, verbose);
-            List<String> result = travesrsor.traverse(from, to);
-            System.out.println(result);
+
+
+            StopWatch watch = new StopWatch();
+            watch.start();
+
+            List<String> result = findPath(ns, from, to, prefixes, verbose);
+
+            watch.stop();
+
+            System.out.println("Time elapsed: " + watch.getTime() + "ms ");
+            if (result.isEmpty()) {
+                System.out.println("There is no path");
+            } else {
+                System.out.println(result);
+            }
         } catch (ArgumentParserException e) {
             parser.handleError(e);
             System.exit(1);
         }
+    }
+
+    private static List<String> findPath(Namespace ns, String from, String to, List<String> prefixes, boolean verbose) {
+        WebsiteTraversor travesrsor = new WebsiteTraversor(ns.getString("website"), prefixes, verbose);
+        return travesrsor.traverse(from, to);
     }
 
 }
