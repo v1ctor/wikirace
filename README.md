@@ -23,6 +23,9 @@ We'd like to see the following things:
 ## Solution
 
 ### Components
-#### Getting links
+
+#### Extracting links
 1. First approach was to use Wiki API but it doesn't scalable and doesn't fit to requirements as we have to work with different websites.
 2. 
+
+#### Find a path
