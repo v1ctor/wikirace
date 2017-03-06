@@ -1,4 +1,4 @@
-package org.buldakov.wikirace;
+package org.buldakov.wikirace.loader;
 
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -10,15 +10,21 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Main {
+public class PageLoader {
 
-    public static void main(String[] args) throws IOException {
-        String baseUri = "https://en.wikipedia.org";
+    private final String baseUri;
+    private final OkHttpClient client;
+    private final HttpUrl endpoint;
 
-        OkHttpClient client = new OkHttpClient();
-        HttpUrl endpoint = HttpUrl.parse(baseUri);
+    public PageLoader(String baseUri) {
+        this.baseUri = baseUri;
+        this.client = new OkHttpClient();
+        this.endpoint = HttpUrl.parse(baseUri);
+    }
+
+    public List<HttpUrl> getLinks(String path) {
         Request request = new Request.Builder()
-                .url(endpoint.newBuilder().addPathSegment("wiki").addPathSegment("Matrix").build())
+                .url(endpoint.newBuilder().addPathSegment(path).build())
                 .build();
 
         Response response = client.newCall(request).execute();
@@ -34,6 +40,6 @@ public class Main {
                 .filter(url -> url.port() == endpoint.port())
                 .collect(Collectors.toList());
 
-        System.out.println(links);
+        return links;
     }
 }
