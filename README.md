@@ -25,7 +25,7 @@ We'd like to see the following things:
 ### Components
 
 #### Extracting links
-1. First approach was to use Wiki API but it doesn't scalable and doesn't fit to requirements as we have to work with different websites.
+1. First approach is to use Wikipedia API but it doesn't scalable and doesn't fit to requirements as we have to work with different websites.
 2. 
 
 #### Find a path

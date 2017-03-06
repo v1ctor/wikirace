@@ -5,6 +5,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,10 +41,16 @@ public class PageLoader {
                 .build();
 
         try {
-            if (verbose) {
-                logger.info("Request resource {}", path);
-            }
+
+            StopWatch watch = new StopWatch();
+            watch.start();
+
             Response response = client.newCall(request).execute();
+
+            watch.stop();
+            if (verbose) {
+                logger.info("Download the resource {} {}ms", path, watch.getTime());
+            }
             if (!response.isSuccessful()) {
                 logger.error("Impossible to load resource {} {}", path, response);
                 response.close();
@@ -54,17 +61,22 @@ public class PageLoader {
             return extractor.getLinks(body, baseUri)
                     .stream()
                     .map(HttpUrl::parse)
-                    .filter(Objects::nonNull)
-                    .filter(url -> url.pathSize() > 1)
-                    .filter(url -> url.host().equals(endpoint.host()))
-                    .filter(url -> url.scheme().equals(endpoint.scheme()))
-                    .filter(url -> url.port() == endpoint.port())
+                    .filter(this::filterLink)
                     .map(url -> String.join("/", url.pathSegments()))
-                    .filter(url -> excludePrefixes.stream().noneMatch(prefix -> StringUtils.startsWith(url, prefix)))
                     .collect(Collectors.toList());
         } catch (IOException e) {
             logger.error("Impossible to load resource {}", path);
             return Collections.emptyList();
         }
+    }
+
+    private boolean filterLink(HttpUrl url) {
+        return url != null
+                && url.pathSize() > 1
+                && url.scheme().equals(endpoint.scheme())
+                && url.host().equals(endpoint.host())
+                && url.port() == endpoint.port()
+                && excludePrefixes.stream().noneMatch(prefix -> StringUtils.startsWith(url.encodedPath(), prefix));
+
     }
 }
