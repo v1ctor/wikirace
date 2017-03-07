@@ -1,12 +1,19 @@
 package org.buldakov.wikirace;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.*;
 
 public class WebsiteTraversor {
 
+    private static final Logger logger = LoggerFactory.getLogger(WebsiteTraversor.class);
+
     private final PageLoader pageLoader;
+    private boolean verbose;
 
     public WebsiteTraversor(String endpoint, List<String> excludePrefixes, boolean verbose) {
+        this.verbose = verbose;
         this.pageLoader = new PageLoader(endpoint, excludePrefixes, verbose);
     }
 
@@ -25,9 +32,11 @@ public class WebsiteTraversor {
             if (middle.isPresent()) {
                 return buildPath(middle.get(), visitedFrom, visitedTo);
             }
-            middle = visitTo(queueTo, visitedFrom, visitedTo);
-            if (middle.isPresent()) {
-                return buildPath(middle.get(), visitedFrom, visitedTo);
+            if (!visitedFrom.isEmpty()) {
+                middle = visitTo(queueTo, visitedFrom, visitedTo);
+                if (middle.isPresent()) {
+                    return buildPath(middle.get(), visitedFrom, visitedTo);
+                }
             }
         }
         return Collections.emptyList();
@@ -52,7 +61,9 @@ public class WebsiteTraversor {
 
     private Optional<String> visitFrom(Queue<String> queueFrom, Map<String, String> visitedFrom,
                                        Map<String, String> visitedTo) {
-
+        if (verbose) {
+            logger.info("From: ");
+        }
         String value = queueFrom.remove();
         if (visitedTo.containsKey(value)) {
             return Optional.of(value);
@@ -70,17 +81,26 @@ public class WebsiteTraversor {
 
     private Optional<String> visitTo(Queue<String> queueTo, Map<String, String> visitedFrom,
                                      Map<String, String> visitedTo) {
+        if (verbose) {
+            logger.info("To: ");
+        }
         String value = queueTo.remove();
         if (visitedFrom.containsKey(value)) {
             return Optional.of(value);
         }
         Set<String> paths = pageLoader.getPaths(value);
         for (String path : paths) {
-            //we need to check that this page actually have links to the destination page, because
-            //links graph unidirectional.
-            if (!visitedTo.containsKey(path) && pageLoader.getPaths(path).contains(value)) {
-                queueTo.offer(path);
+            if (!visitedTo.containsKey(path)) {
+                //we need to check that this page actually have back link to the destination page, because
+                //links graph unidirectional.
+                if (!pageLoader.getPaths(path).contains(value)) {
+                    continue;
+                }
                 visitedTo.put(path, value);
+                if (visitedFrom.containsKey(path)) {
+                    return Optional.of(path);
+                }
+                queueTo.offer(path);
             }
         }
 

@@ -9,6 +9,7 @@ import org.apache.commons.lang3.time.StopWatch;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Main {
 
@@ -29,17 +30,15 @@ public class Main {
                 .help("Prefixes to exclude")
                 .action(Arguments.append());
         parser.addArgument("-v", "--verbose")
-                .setDefault(false)
-                .choices(true, false)
-                .type(Boolean.class)
+                .action(Arguments.storeTrue())
                 .help("Verbosity level");
         try {
             Namespace ns = parser.parseArgs(args);
-            String from = ns.getString("from");
-            String to = ns.getString("to");
-            List<String> prefixes = ns.getList("exclude");
+            String from = PathUtils.normalize(ns.getString("from"));
+            String to = PathUtils.normalize(ns.getString("to"));
+            List<String> prefixes = ns.<String>getList("exclude").stream()
+                    .map(PathUtils::normalize).collect(Collectors.toList());
             boolean verbose = ns.getBoolean("verbose");
-
 
             StopWatch watch = new StopWatch();
             watch.start();

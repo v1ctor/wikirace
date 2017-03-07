@@ -33,5 +33,5 @@ We'd like to see the following things:
 
 #### Usage
 ```bash
-java wikirace -f "/wiki/Matrix" -t "/wiki/Neo" -e "/wiki/File:" -e "/wiki/Special:" -v true 
+java wikirace -f "/wiki/Matrix" -t "/wiki/Neo_(The_Matrix)" -e "/wiki/File:" -e "/wiki/Special:" -e "/w/index.php" -v true 
 ```

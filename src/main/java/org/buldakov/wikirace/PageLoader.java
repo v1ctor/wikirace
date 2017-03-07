@@ -15,9 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -59,9 +57,9 @@ public class PageLoader {
                     .stream()
                     .map(HttpUrl::parse)
                     .filter(this::filterLink)
-                    .map(url -> String.join("/", url.pathSegments()))
+                    .map(PathUtils::urlDecoded)
                     .collect(Collectors.toSet());
-        } catch (ExecutionException e) {
+        } catch (Exception e) {
             logger.error("Impossible to load resource {}", path);
             return Collections.emptySet();
         }
@@ -73,12 +71,13 @@ public class PageLoader {
                 && url.scheme().equals(endpoint.scheme())
                 && url.host().equals(endpoint.host())
                 && url.port() == endpoint.port()
-                && excludePrefixes.stream().noneMatch(prefix -> StringUtils.startsWith(url.encodedPath(), prefix));
+                && excludePrefixes.stream().noneMatch(prefix -> StringUtils.startsWith(
+                        PathUtils.urlDecoded(url), prefix));
     }
 
     private String loadPage(String path) throws IOException {
         Request request = new Request.Builder()
-                .url(endpoint.newBuilder().addPathSegments(StringUtils.removeStart(path, "/")).build())
+                .url(endpoint.newBuilder().addPathSegments(PathUtils.normalize(path)).build())
                 .build();
 
         StopWatch watch = new StopWatch();
