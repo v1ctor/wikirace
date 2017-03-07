@@ -3,7 +3,6 @@ package org.buldakov.wikirace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,17 +13,17 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class WebsiteTraversor {
 
     private static final Logger logger = LoggerFactory.getLogger(WebsiteTraversor.class);
 
-    private final PageLoader pageLoader;
+    private final PathLoader pathLoader;
 
     public WebsiteTraversor(String endpoint, List<String> excludePrefixes, boolean verbose) {
-        this.pageLoader = new PageLoader(endpoint, excludePrefixes, verbose);
+        this.pathLoader = new PathLoader(endpoint, excludePrefixes, verbose);
     }
 
     public List<String> traverse(String from, String to) {
@@ -37,15 +36,16 @@ public class WebsiteTraversor {
         visitedFrom.put(from, "");
         visitedTo.put(to, "");
 
-        ExecutorService executor = Executors.newFixedThreadPool(2);
+        ExecutorService executor = Executors.newSingleThreadExecutor();
         try {
             AtomicBoolean finished = new AtomicBoolean(false);
-            Optional<String> middle = executor.invokeAny(Arrays.asList(
-                    () -> visitFrom(queueFrom, visitedFrom, visitedTo, finished),
-                    () -> visitTo(queueTo, visitedFrom, visitedTo, finished)));
-            finished.compareAndSet(false, true);
+
+            //Run back link search in a separate thread
+            Future<Optional<String>> future = executor.submit(() -> visitTo(queueTo, visitedFrom, visitedTo, finished));
+            Optional<String> middle = visitFrom(queueFrom, visitedFrom, visitedTo, finished);
+
+            future.get();
             executor.shutdown();
-            executor.awaitTermination(10, TimeUnit.SECONDS);
             if (middle.isPresent()) {
                 return buildPath(middle.get(), visitedFrom, visitedTo);
             }
@@ -77,14 +77,16 @@ public class WebsiteTraversor {
         while (!queueFrom.isEmpty() && !finished.get()) {
             String value = queueFrom.remove();
             if (visitedTo.containsKey(value)) {
+                finished.compareAndSet(false, true);
                 return Optional.of(value);
             }
-            Set<String> paths = pageLoader.getPaths(value);
+            Set<String> paths = pathLoader.getPaths(value);
             for (String path : paths) {
                 if (!visitedFrom.containsKey(path)) {
                     queueFrom.offer(path);
                     visitedFrom.put(path, value);
                     if (visitedTo.containsKey(path)) {
+                        finished.compareAndSet(false, true);
                         return Optional.of(path);
                     }
                 }
@@ -98,19 +100,21 @@ public class WebsiteTraversor {
         while (!queueTo.isEmpty() && !finished.get()) {
             String value = queueTo.remove();
             if (visitedFrom.containsKey(value)) {
+                finished.compareAndSet(false, true);
                 return Optional.of(value);
             }
-            Set<String> paths = pageLoader.getPaths(value);
+            Set<String> paths = pathLoader.getPaths(value);
             for (String path : paths) {
                 if (!visitedTo.containsKey(path) && !finished.get()) {
                     //we need to check that this page actually have back link to the destination page, because
                     //links graph unidirectional.
-                    if (!pageLoader.getPaths(path).contains(value)) {
+                    if (!pathLoader.getPaths(path).contains(value)) {
                         continue;
                     }
                     visitedTo.put(path, value);
                     queueTo.offer(path);
                     if (visitedFrom.containsKey(path)) {
+                        finished.compareAndSet(false, true);
                         return Optional.of(path);
                     }
                 }

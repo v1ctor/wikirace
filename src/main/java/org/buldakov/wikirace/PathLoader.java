@@ -19,9 +19,9 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-public class PageLoader {
+public class PathLoader {
 
-    private static final Logger logger = LoggerFactory.getLogger(PageLoader.class);
+    private static final Logger logger = LoggerFactory.getLogger(PathLoader.class);
 
     private final String baseUri;
     private final List<String> excludePrefixes;
@@ -31,7 +31,7 @@ public class PageLoader {
     private final boolean verbose;
     private final LoadingCache<String, String> pages;
 
-    public PageLoader(String baseUri, List<String> excludePrefixes, boolean verbose) {
+    public PathLoader(String baseUri, List<String> excludePrefixes, boolean verbose) {
         this.baseUri = baseUri;
         this.excludePrefixes = excludePrefixes;
         this.verbose = verbose;
@@ -60,7 +60,9 @@ public class PageLoader {
                     .map(PathUtils::urlDecoded)
                     .collect(Collectors.toSet());
         } catch (Exception e) {
-            logger.error("Impossible to load resource {}", path);
+            if (verbose) {
+                logger.error("Impossible to load resource {}", path, e);
+            }
             return Collections.emptySet();
         }
     }
@@ -72,7 +74,7 @@ public class PageLoader {
                 && url.host().equals(endpoint.host())
                 && url.port() == endpoint.port()
                 && excludePrefixes.stream().noneMatch(prefix -> StringUtils.startsWith(
-                        PathUtils.urlDecoded(url), prefix));
+                PathUtils.urlDecoded(url), prefix));
     }
 
     private String loadPage(String path) throws IOException {
@@ -80,9 +82,9 @@ public class PageLoader {
                 .url(endpoint.newBuilder().addPathSegments(PathUtils.normalize(path)).build())
                 .build();
 
+
         StopWatch watch = new StopWatch();
         watch.start();
-
         Response response = client.newCall(request).execute();
 
         watch.stop();
@@ -95,5 +97,6 @@ public class PageLoader {
             throw new IllegalStateException("Impossible to load resource");
         }
         return response.body().string();
+
     }
 }

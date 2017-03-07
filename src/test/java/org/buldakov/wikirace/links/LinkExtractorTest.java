@@ -16,4 +16,11 @@ public class LinkExtractorTest {
         Assert.assertEquals(Collections.singletonList("http://wikipedia.com/"), links);
     }
 
+    @Test
+    public void getRelativeLinksTest() {
+        List<String> links = new LinkExtractor().getLinks("<html><a href=\"/wiki/Matrix\"/></html>",
+                "http://wikipedia.com/");
+        Assert.assertEquals(Collections.singletonList("http://wikipedia.com/wiki/Matrix"), links);
+    }
+
 }
