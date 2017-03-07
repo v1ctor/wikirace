@@ -11,7 +11,8 @@ public class LinkExtractorTest {
 
     @Test
     public void getLinksTest() {
-        List<String> links = new LinkExtractor().getLinks("<html><a href=\"http://wikipedia.com/\"/></html>");
+        List<String> links = new LinkExtractor().getLinks("<html><a href=\"http://wikipedia.com/\"/></html>",
+                "http://wikipedia.com/");
         Assert.assertEquals(Collections.singletonList("http://wikipedia.com/"), links);
     }
 
