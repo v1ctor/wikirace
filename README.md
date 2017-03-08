@@ -25,17 +25,12 @@ We'd like to see the following things:
 ### Components
 
 #### Extracting links
-1. First approach is to use Wikipedia API. It could improve request speed but this solution isn't portable.  
-2. Parse links by my own. This approach is slower but it fits better to our requirements. **(1 hour)**
+1. First thought is to use Wikipedia API. It could improve request speed but this solution isn't portable to other sites.
+2. Parse links by my own. This approach is slower but it fits better to our requirements. **(1 hour)**  
 
 #### Find a path
-1. First I've written simple BFS solution, but it was working slowly. **(1 hour)**
-
-2. Then I decided to implement bidirectional BFS, but tricky part in our case is that the wiki graph is unidirectional, so
- if the destination page have links to some page we could only assume that these pages may have link to our destination page.
- To check it we also need to download these pages, extract links from them, and check if our current page in these links.
- To avoid loading pages twice, first time for back-link, and second time in a regular workflow, I have added caching of already loaded
- pages. **(3 hours)**
+1. First I've written a simple BFS solution, but it was working slowly. **(1 hour)**  
+2. Then I decided to implement bidirectional BFS, but the tricky part in our case is that the wiki graph is unidirectional, so if the destination page has links to some page we could only assume that these pages may have link to our destination page. To check it we also need to download these pages, extract links from them, and check if our current page is among these links. To avoid loading pages twice, first time for back-link, and second time in a regular workflow, I have added caching of already loaded pages. **(3 hours)**
 
 ## Usage
 ```bash
@@ -66,8 +61,6 @@ Time elapsed: 14886ms
 ```
 
 ## Limitations
-1. Because this solution is appropriate for another websites except wikipedia, we need to specify the whole path instead 
-of title.
-2. In Wiki API it's possible to group requests in batches. This isn't possible with my solution, because I have to
-download html page and then get links from it.
-3. Right know we have only 2 simultaneous requests because otherwise we could be blocked by wikipedia admins.
+1. Because this solution is working not only for Wikipedia but also for other websites, we have to specify the whole path instead of a title. 
+2. In Wiki API it's possible to group requests in batches. This isn't possible in my solution, because I have to download an html page first and then get links from it. 
+3. Right now we can make only 2 simultaneous requests because otherwise we will be blocked by Wikipedia admins.
