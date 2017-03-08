@@ -1,4 +1,4 @@
-package org.buldakov.wikirace;
+package org.buldakov.wikirace.traversor.common;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;

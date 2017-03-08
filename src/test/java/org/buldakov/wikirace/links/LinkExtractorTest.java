@@ -1,6 +1,6 @@
 package org.buldakov.wikirace.links;
 
-import org.buldakov.wikirace.LinkExtractor;
+import org.buldakov.wikirace.traversor.common.LinkExtractor;
 import org.junit.Assert;
 import org.junit.Test;
 

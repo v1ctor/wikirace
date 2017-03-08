@@ -6,6 +6,9 @@ import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.apache.commons.lang3.time.StopWatch;
+import org.buldakov.wikirace.error.ValidationException;
+import org.buldakov.wikirace.traversor.TraversorFactory;
+import org.buldakov.wikirace.traversor.common.PathUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,24 +30,29 @@ public class Main {
                 .setDefault("https://en.wikipedia.org/")
                 .help("Specify a website where we need to find a path");
         parser.addArgument("-e", "--exclude")
-                .help("Link prefixes to exclude")
+                .help("Link prefixes or titles to exclude")
                 .action(Arguments.append());
         parser.addArgument("-v", "--verbose")
                 .action(Arguments.storeTrue())
                 .help("Verbosity level");
+        parser.addArgument("-c", "--common")
+                .action(Arguments.storeTrue())
+                .help("Force common traversor usage");
+
         try {
             Namespace ns = parser.parseArgs(args);
             String website = ns.getString("website");
             String from = PathUtils.normalize(ns.getString("from"));
             String to = PathUtils.normalize(ns.getString("to"));
-            List<String> prefixes = ns.<String>getList("exclude").stream()
+            List<String> excludes = ns.<String>getList("exclude").stream()
                     .map(PathUtils::normalize).collect(Collectors.toList());
             boolean verbose = ns.getBoolean("verbose");
+            boolean common = ns.getBoolean("common");
 
             StopWatch watch = new StopWatch();
             watch.start();
 
-            List<String> result = findPath(website, from, to, prefixes, verbose);
+            List<String> result = new TraversorFactory().traversor(website, excludes, common, verbose).traverse(from, to);
 
             watch.stop();
 
@@ -57,12 +65,10 @@ public class Main {
         } catch (ArgumentParserException e) {
             parser.handleError(e);
             System.exit(1);
+        } catch (ValidationException e) {
+            System.out.println(e.getMessage());
+            System.exit(1);
         }
-    }
-
-    private static List<String> findPath(String website, String from, String to, List<String> prefixes,
-                                         boolean verbose) {
-        return new WebsiteTraversor(website, prefixes, verbose).traverse(from, to);
     }
 
 }

@@ -1,4 +1,4 @@
-package org.buldakov.wikirace;
+package org.buldakov.wikirace.traversor.common;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;

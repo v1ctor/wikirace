@@ -1,4 +1,4 @@
-package org.buldakov.wikirace;
+package org.buldakov.wikirace.traversor.common;
 
 import okhttp3.HttpUrl;
 import org.apache.commons.lang3.StringUtils;
