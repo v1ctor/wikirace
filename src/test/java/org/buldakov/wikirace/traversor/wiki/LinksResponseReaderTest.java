@@ -36,7 +36,7 @@ public class LinksResponseReaderTest {
                 "}\n" +
                 "}\n" +
                 "}";
-        LinksResponse response = new LinksResponseReader().read(json.getBytes(), LinkType.FROM);
+        LinksResponse response = new LinksResponseReader().read(json, LinkType.FROM);
         Assert.assertEquals(response.getCon(), Optional.of("736|0|Alfred_Kastler"));
         Assert.assertEquals(response.getLinks(), new HashSet<>(Arrays.asList("Albert Einstein World Award of Science",
                 "Albert Einstein Peace Prize")));
