@@ -27,6 +27,8 @@ We'd like to see the following things:
 #### Extracting links
 1. First thought is to use Wikipedia API. It could improve request speed but this solution isn't portable to other sites.
 2. Parse links by my own. This approach is slower but it fits better to our requirements. **(1 hour)**  
+3. After complete common case I decided to optimize solution for the Wikipedia specially. 
+I use Wikipedia API to retrieve links from and to web page. We could force usage of the common solution by passing option ```--common```. **(1 hour)**
 
 #### Find a path
 1. First I've written a simple BFS solution, but it was working slowly. **(1 hour)**  
@@ -37,30 +39,37 @@ We'd like to see the following things:
 $ gradle distZip
 $ unzip build/distributions/wikirace-1.0-SNAPSHOT.zip 
 $ wikirace-1.0-SNAPSHOT/bin/wikirace -h
-usage: wikirace [-h] -f FROM -t TO [-w WEBSITE] [-e EXCLUDE] [-v]
+usage: wikirace [-h] -f FROM -t TO [-w WEBSITE] [-e EXCLUDE] [-v] [-c]
 
-Find the path from two resources on website if exists
+Find a path from two resources on website if exists
 
 optional arguments:
   -h, --help             show this help message and exit
   -f FROM, --from FROM   Specify the source resource
   -t TO, --to TO         Specify the destination resource
   -w WEBSITE, --website WEBSITE
-                         Specify website to find the path (default: https://en.wikipedia.org/)
+                         Specify a website where  we  need  to  find a path
+                         (default: https://en.wikipedia.org/)
   -e EXCLUDE, --exclude EXCLUDE
-                         Prefixes to exclude
+                         Link prefixes or titles to exclude
   -v, --verbose          Verbosity level (default: false)
+  -c, --common           Force usage of the common traversor (default: false)
+
 $ wikirace-1.0-SNAPSHOT/bin/wikirace --vervose -f "/wiki/Hitler" -t "/wiki/Tinder" -e "/wiki/File:" -e "/wiki/Special:" -e "/wiki/Wikipedia:" -e "/w/index.php"  
 ```
 
 ## Examples
 ```bash
-$ wikirace-1.0-SNAPSHOT/bin/wikirace -f "/wiki/Kitten" -t "/wiki/Hitler" -e "/wiki/File:" -e "/wiki/Special:" -e "/wiki/Wikipedia:" -e "/w/index.php"
-Time elapsed: 14886ms 
-[wiki/Kitten, wiki/JSTOR, wiki/Associated_Press, wiki/Hitler] 
+$ wikirace-1.0-SNAPSHOT/bin/wikirace --common -f "/wiki/Kitten" -t "/wiki/Hitler" -e "/wiki/File:" -e "/wiki/Special:" -e "/wiki/Wikipedia:" -e "/w/index.php"
+Time elapsed: 23993ms 
+[wiki/Kitten, wiki/Russian_Blue, wiki/World_War_II, wiki/Hitler]
+$ wikirace-1.0-SNAPSHOT/bin/wikirace -f "Kitten" -t "Hitler"
+Time elapsed: 7533ms 
+[Kitten, Chartreux, Grenoble, Ardennes (department), Hitler]
 ```
 
 ## Limitations
-1. Because this solution is working not only for Wikipedia but also for other websites, we have to specify the whole path instead of a title. 
+1. By default en.wikipedia.org is used. For default case we have to pass page titles in arguments. This solution is optimized for Wikipedia but we could force to execute common solution for Wikipedia by using 
+```--common``` flag. Because this solution is working not only for Wikipedia but also for other websites, we have to specify the whole path instead of a title. 
 2. In Wiki API it's possible to group requests in batches. This isn't possible in my solution, because I have to download an html page first and then get links from it. 
 3. Right now we can make only 2 simultaneous requests because otherwise we will be blocked by Wikipedia admins.

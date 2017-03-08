@@ -37,7 +37,7 @@ public class Main {
                 .help("Verbosity level");
         parser.addArgument("-c", "--common")
                 .action(Arguments.storeTrue())
-                .help("Force common traversor usage");
+                .help("Force usage of the common traversor");
 
         try {
             Namespace ns = parser.parseArgs(args);
