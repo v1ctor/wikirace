@@ -3,8 +3,7 @@ package org.buldakov.wikirace.traversor.wiki;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Optional;
 
 public class LinksResponseReaderTest {
@@ -38,8 +37,10 @@ public class LinksResponseReaderTest {
                 "}";
         LinksResponse response = new LinksResponseReader().read(json, LinkType.FROM);
         Assert.assertEquals(response.getCon(), Optional.of("736|0|Alfred_Kastler"));
-        Assert.assertEquals(response.getLinks(), new HashSet<>(Arrays.asList("Albert Einstein World Award of Science",
-                "Albert Einstein Peace Prize")));
+        HashMap<String, String> expected = new HashMap<>();
+        expected.put("Albert Einstein Peace Prize", "Albert Einstein");
+        expected.put("Albert Einstein World Award of Science", "Albert Einstein");
+        Assert.assertEquals(expected, response.getLinks());
     }
 
 }
