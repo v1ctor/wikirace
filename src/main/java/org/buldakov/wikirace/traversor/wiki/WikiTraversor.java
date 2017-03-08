@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 public class WikiTraversor extends AbstractTraversor {
@@ -22,20 +23,20 @@ public class WikiTraversor extends AbstractTraversor {
 
     @Override
     protected Optional<String> visitFrom(Queue<String> queue, Map<String, String> visitedFrom,
-                                         Map<String, String> visitedTo) {
-        return visit(queue, visitedFrom, visitedTo, client::getFromLinks);
+                                         Map<String, String> visitedTo, AtomicBoolean finished) {
+        return visit(queue, visitedFrom, visitedTo, client::getFromLinks, finished);
     }
 
     @Override
     protected Optional<String> visitTo(Queue<String> queue, Map<String, String> visitedFrom,
-                                       Map<String, String> visitedTo) {
-        return visit(queue, visitedTo, visitedFrom, client::getToLinks);
+                                       Map<String, String> visitedTo, AtomicBoolean finished) {
+        return visit(queue, visitedTo, visitedFrom, client::getToLinks, finished);
     }
 
     private Optional<String> visit(Queue<String> queue, Map<String, String> front, Map<String, String> back,
-                                   Function<List<String>, Map<String, String>> linkLoader) {
+                                   Function<List<String>, Map<String, String>> linkLoader, AtomicBoolean finished) {
 
-        while (!queue.isEmpty()) {
+        while (!queue.isEmpty() && !finished.get()) {
             List<String> pages = new ArrayList<>(queue.size());
             while (!queue.isEmpty() && pages.size() <= BATCH_SIZE) {
                 pages.add(queue.remove());
@@ -46,11 +47,13 @@ public class WikiTraversor extends AbstractTraversor {
                     front.put(path.getKey(), path.getValue());
                     queue.offer(path.getKey());
                     if (back.containsKey(path.getKey())) {
+                        finished.compareAndSet(false, true);
                         return Optional.of(path.getKey());
                     }
                 }
             }
         }
+        finished.compareAndSet(false, true);
         return Optional.empty();
     }
 }

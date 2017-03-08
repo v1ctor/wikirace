@@ -14,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class AbstractTraversor implements WebsiteTraversor {
 
@@ -30,12 +31,12 @@ public abstract class AbstractTraversor implements WebsiteTraversor {
         visitedFrom.put(from, "");
         visitedTo.put(to, "");
 
-        ExecutorService executor = Executors.newFixedThreadPool(2);
         try {
-            //Run back link search in a separate thread
+            AtomicBoolean finished = new AtomicBoolean(false);
+            ExecutorService executor = Executors.newFixedThreadPool(2);
             List<Future<Optional<String>>> futures = executor.invokeAll(Arrays.asList(
-                    () -> visitTo(queueTo, visitedFrom, visitedTo),
-                    () -> visitFrom(queueFrom, visitedFrom, visitedTo)));
+                    () -> visitTo(queueTo, visitedFrom, visitedTo, finished),
+                    () -> visitFrom(queueFrom, visitedFrom, visitedTo, finished)));
 
             Optional<String> middleFrom = futures.get(0).get();
             Optional<String> middleTo = futures.get(1).get();
@@ -52,10 +53,10 @@ public abstract class AbstractTraversor implements WebsiteTraversor {
     }
 
     protected abstract Optional<String> visitTo(Queue<String> queueTo, Map<String, String> visitedFrom,
-                                                Map<String, String> visitedTo);
+                                                Map<String, String> visitedTo, AtomicBoolean finished);
 
     protected abstract Optional<String> visitFrom(Queue<String> queueFrom, Map<String, String> visitedFrom,
-                                                  Map<String, String> visitedTo);
+                                                  Map<String, String> visitedTo, AtomicBoolean finished);
 
     private List<String> buildPath(String middle, Map<String, String> visitedFrom, Map<String, String> visitedTo) {
         LinkedList<String> result = new LinkedList<>();
