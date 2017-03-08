@@ -11,6 +11,7 @@ import org.buldakov.wikirace.traversor.TraversorFactory;
 import org.buldakov.wikirace.traversor.common.PathUtils;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,7 +45,11 @@ public class Main {
             String website = ns.getString("website");
             String from = PathUtils.normalize(ns.getString("from"));
             String to = PathUtils.normalize(ns.getString("to"));
-            List<String> excludes = ns.<String>getList("exclude").stream()
+            List<String> exclude = ns.getList("exclude");
+            if (exclude == null) {
+                exclude = Collections.emptyList();
+            }
+            List<String> excludes = exclude.stream()
                     .map(PathUtils::normalize).collect(Collectors.toList());
             boolean verbose = ns.getBoolean("verbose");
             boolean common = ns.getBoolean("common");
