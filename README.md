@@ -71,5 +71,5 @@ Time elapsed: 7533ms
 ## Limitations
 1. By default en.wikipedia.org is used. For default case we have to pass page titles in arguments. This solution is optimized for Wikipedia but we could force to execute common solution for Wikipedia by using 
 ```--common``` flag. Because this solution is working not only for Wikipedia but also for other websites, we have to specify the whole path instead of a title. 
-2. In Wiki API it's possible to group requests in batches. This isn't possible in my solution, because I have to download an html page first and then get links from it. 
+2. In Wiki API it's possible to group requests in batches. This isn't possible in my solution, because I have to download an html page first and then get links from it.
 3. Right now we can make only 2 simultaneous requests because otherwise we will be blocked by Wikipedia admins.
